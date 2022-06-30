@@ -1,0 +1,35 @@
+image: tshio/awscli-docker-compose-pipelines:0.0.3
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - node
+        services:
+          - docker
+        script:
+          - npm run docker-build
+          - npm run lint
+          - npm run units
+
+  custom:
+    create-staging:
+      - step:
+          name: create staging environment
+          script:
+            - ./deploy/apprunner/scripts/create.sh
+          services:
+            - docker
+    deploy-staging:
+      - step:
+          name: build and push docker
+          script:
+            - ./deploy/apprunner/scripts/release.sh
+          services:
+            - docker
+      - step:
+          name: deploy and update app runner
+          script:
+            - ./deploy/apprunner/scripts/deploy.sh
+          services:
+            - docker
